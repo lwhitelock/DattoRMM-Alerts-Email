@@ -51,28 +51,30 @@ Set-DrmmApiParameters @params
 
 $Alert = Get-DrmmAlert -alertUid $AlertID
 
-[System.Collections.Generic.List[PSCustomObject]]$AllAlerts = @()
+if ($Alert) {
 
-$Device = Get-DrmmDevice -deviceUid $Alert.alertSourceInfo.deviceUid
-$DeviceAudit = Get-DrmmAuditDevice -deviceUid $Alert.alertSourceInfo.deviceUid
+    [System.Collections.Generic.List[PSCustomObject]]$AllAlerts = @()
 
-
-# Generate Email Subject
-$EmailSubject = "Alert: $($AlertTypesLookup[$Alert.alertContext.'@class']) - $(Get-AlertDescription -Alert $Alert) on device: $($Device.hostname) - Alert{$($Alert.alertUid)}"
-
-# Set the Header Colour for the alert based on pirority
-Switch ($Alert.priority) {
-    'Critical' { $Colour = ' background-color:#EC422E; color:#1C3E4C' }
-    'High' { $Colour = ' background-color:#F68218; color:#1C3E4C' }
-    'Moderate' { $Colour = ' background-color:#F7C210; color:#1C3E4C' }
-    'Low' { $Colour = ' background-color:#2C81C8; color:#ffffff' }
-    default { $Colour = 'color:#ffffff;' }
-}
+    $Device = Get-DrmmDevice -deviceUid $Alert.alertSourceInfo.deviceUid
+    $DeviceAudit = Get-DrmmAuditDevice -deviceUid $Alert.alertSourceInfo.deviceUid
 
 
-# Build the Documentation Link Button
-if ($AlertDocumentationURL) {
-    $DocLinkHTML = @"
+    # Generate Email Subject
+    $EmailSubject = "Alert: $($AlertTypesLookup[$Alert.alertContext.'@class']) - $(Get-AlertDescription -Alert $Alert) on device: $($Device.hostname) - Alert{$($Alert.alertUid)}"
+
+    # Set the Header Colour for the alert based on pirority
+    Switch ($Alert.priority) {
+        'Critical' { $Colour = ' background-color:#EC422E; color:#1C3E4C' }
+        'High' { $Colour = ' background-color:#F68218; color:#1C3E4C' }
+        'Moderate' { $Colour = ' background-color:#F7C210; color:#1C3E4C' }
+        'Low' { $Colour = ' background-color:#2C81C8; color:#ffffff' }
+        default { $Colour = 'color:#ffffff;' }
+    }
+
+
+    # Build the Documentation Link Button
+    if ($AlertDocumentationURL) {
+        $DocLinkHTML = @"
 <td valign="top" width="128">
                         <![endif]-->
                                     <div style="display:inline-block; margin: 2px; max-width: 128px; min-width:100px; vertical-align:top; width:100%;"
@@ -84,14 +86,14 @@ if ($AlertDocumentationURL) {
                                     <!--[if mso]>
                         </td>
 "@
-} else {
-    $DocLinkHTML = ''
-}
+    } else {
+        $DocLinkHTML = ''
+    }
 
 
-# Build the device details section if enabled.
-if ($ShowDeviceDetails -eq $True) {
-    $DeviceDetailsHTML = @"
+    # Build the device details section if enabled.
+    if ($ShowDeviceDetails -eq $True) {
+        $DeviceDetailsHTML = @"
     <!-- Device Details : BEGIN -->
     <tr>
         <td style="background-color: #222222;">
@@ -182,33 +184,33 @@ if ($ShowDeviceDetails -eq $True) {
     </td>
 </tr>
 "@
-} else {
-    $DeviceDetailsHTML = ''
-}
+    } else {
+        $DeviceDetailsHTML = ''
+    }
 
 
-# Build the device status section if enabled
-if ($ShowDeviceStatus) {
+    # Build the device status section if enabled
+    if ($ShowDeviceStatus) {
 
-    # Generate CPU/ RAM Use Data
-    $CPUData = $Device.udf."udf$CPUUDF" | convertfrom-json
-    $RAMData = $Device.udf."udf$RAMUDF" | convertfrom-json
+        # Generate CPU/ RAM Use Data
+        $CPUData = $Device.udf."udf$CPUUDF" | convertfrom-json
+        $RAMData = $Device.udf."udf$RAMUDF" | convertfrom-json
 
-    $CPUUse = $CPUData.T
-    $RAMUse = $RAMData.T
+        $CPUUse = $CPUData.T
+        $RAMUse = $RAMData.T
 
-    $CPUTable = Get-DecodedTable -TableString $CPUData.D -UseValue '%' | convertto-html -Fragment
-    $RAMTable = Get-DecodedTable -TableString $RAMData.D -UseValue 'GBs' | convertto-html -Fragment
+        $CPUTable = Get-DecodedTable -TableString $CPUData.D -UseValue '%' | convertto-html -Fragment
+        $RAMTable = Get-DecodedTable -TableString $RAMData.D -UseValue 'GBs' | convertto-html -Fragment
 
-    $DiskData = $DeviceAudit.logicalDisks | where-object { $_.freespace }
+        $DiskData = $DeviceAudit.logicalDisks | where-object { $_.freespace }
 
-    # Build the HTML for Disk Usage
-    $DiskRaw = foreach ($Disk in $DiskData) {
-        $Total = [math]::round($Disk.size / 1024 / 1024 / 1024, 2)
-        $Free = [math]::round($Disk.freespace / 1024 / 1024 / 1024, 2)
-        $Used = [math]::round($Total - $Free, 2)
-        $UsedPercent = [math]::round(($Used / $Total) * 100, 2)
-        @"
+        # Build the HTML for Disk Usage
+        $DiskRaw = foreach ($Disk in $DiskData) {
+            $Total = [math]::round($Disk.size / 1024 / 1024 / 1024, 2)
+            $Free = [math]::round($Disk.freespace / 1024 / 1024 / 1024, 2)
+            $Used = [math]::round($Total - $Free, 2)
+            $UsedPercent = [math]::round(($Used / $Total) * 100, 2)
+            @"
         $($Disk.diskIdentifier) $($Used)% Used - $($Free)GB Free
         <svg width='100%' height='65px'>
             <g class='bars'>
@@ -217,10 +219,10 @@ if ($ShowDeviceStatus) {
             </g>
         </svg>
 "@
-    }
+        }
 
-    $DiskHTML = $DiskRaw -join ''
-    $DeviceStatusHTML = @"
+        $DiskHTML = $DiskRaw -join ''
+        $DeviceStatusHTML = @"
     <!-- Device Status : BEGIN -->
     <tr>
         <td style="background-color: #222222;">
@@ -311,57 +313,57 @@ if ($ShowDeviceStatus) {
     </td>
 </tr>
 "@
-} else {
-    $DeviceStatusHTML = ''
-}
-
-
-if ($showAlertDetails -eq $true) {
-
-    $DeviceOpenAlerts = Get-DrmmDeviceOpenAlerts -deviceUid $Alert.alertSourceInfo.deviceUid
-    $DeviceResolvedAlerts = Get-DrmmDeviceResolvedAlerts -deviceUid $Alert.alertSourceInfo.deviceUid
-
-    $DeviceOpenAlerts | foreach-object { $null = $AllAlerts.add($_) }
-    $DeviceResolvedAlerts | foreach-object { $null = $AllAlerts.add($_) }
-
-    $XValues = @("0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23")
-    $YValues = @("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
-
-    $AlertDates = $AllAlerts.timestamp | Foreach-Object { [datetime]$origin = '1970-01-01 00:00:00'; $origin.AddMilliSeconds($_) }
-
-    $ParsedDates = $AlertDates | ForEach-Object { "$($_.dayofweek)$($_.hour)" }
-
-    $HTMLHeatmapTable = Get-Heatmap -InputData $ParsedDates -XValues $XValues -YValues $YValues
-
-    $ParsedOpenAlerts = $DeviceOpenAlerts | ForEach-Object {
-        [PSCustomObject]@{
-            View        = "<a class=`"button-a button-a-primary`" target=`"_blank`" href=`"https://$($DattoPlatform)rmm.centrastage.net/alert/$($_.alertUid)`">View</a>"
-            Priority    = $_.priority
-            Created     = $([datetime]$origin = '1970-01-01 00:00:00'; $origin.AddMilliSeconds($_.timestamp))
-            Type        = $AlertTypesLookup[$_.alertContext.'@class']
-            Description = Get-AlertDescription -Alert $_
-        }
+    } else {
+        $DeviceStatusHTML = ''
     }
 
-    $HTMLOpenAlerts = $ParsedOpenAlerts | convertto-html -Fragment
-    $HTMLParsedOpenAlerts = [System.Web.HttpUtility]::HtmlDecode(((($HTMLOpenAlerts) -replace '<table>', $AlertsTableStyle) -replace '<td>', $AlertsTableTDStyle))
 
-    $ParsedResolvedAlerts = $DeviceResolvedAlerts | ForEach-Object { 
-        [PSCustomObject]@{
-            View        = "<a class=`"button-a button-a-primary`" target=`"_blank`" href=`"https://$($DattoPlatform)rmm.centrastage.net/alert/$($_.alertUid)`">View</a>"
-            Priority    = $_.priority
-            Created     = $([datetime]$origin = '1970-01-01 00:00:00'; $origin.AddMilliSeconds($_.timestamp))
-            Type        = $AlertTypesLookup[$_.alertContext.'@class']
-            Description = Get-AlertDescription -Alert $_
+    if ($showAlertDetails -eq $true) {
+
+        $DeviceOpenAlerts = Get-DrmmDeviceOpenAlerts -deviceUid $Alert.alertSourceInfo.deviceUid
+        $DeviceResolvedAlerts = Get-DrmmDeviceResolvedAlerts -deviceUid $Alert.alertSourceInfo.deviceUid
+
+        $DeviceOpenAlerts | foreach-object { $null = $AllAlerts.add($_) }
+        $DeviceResolvedAlerts | foreach-object { $null = $AllAlerts.add($_) }
+
+        $XValues = @("0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23")
+        $YValues = @("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
+
+        $AlertDates = $AllAlerts.timestamp | Foreach-Object { [datetime]$origin = '1970-01-01 00:00:00'; $origin.AddMilliSeconds($_) }
+
+        $ParsedDates = $AlertDates | ForEach-Object { "$($_.dayofweek)$($_.hour)" }
+
+        $HTMLHeatmapTable = Get-Heatmap -InputData $ParsedDates -XValues $XValues -YValues $YValues
+
+        $ParsedOpenAlerts = $DeviceOpenAlerts | ForEach-Object {
+            [PSCustomObject]@{
+                View        = "<a class=`"button-a button-a-primary`" target=`"_blank`" href=`"https://$($DattoPlatform)rmm.centrastage.net/alert/$($_.alertUid)`">View</a>"
+                Priority    = $_.priority
+                Created     = $([datetime]$origin = '1970-01-01 00:00:00'; $origin.AddMilliSeconds($_.timestamp))
+                Type        = $AlertTypesLookup[$_.alertContext.'@class']
+                Description = Get-AlertDescription -Alert $_
+            }
         }
-    }
 
-    $HTMLResolvedAlerts = $ParsedResolvedAlerts | Sort-Object Created -desc | select-object -first 10 | convertto-html -Fragment
-    $HTMLParsedResolvedAlerts = [System.Web.HttpUtility]::HtmlDecode(((($HTMLResolvedAlerts) -replace '<table>', $AlertsTableStyle) -replace '<td>', $AlertsTableTDStyle))
+        $HTMLOpenAlerts = $ParsedOpenAlerts | convertto-html -Fragment
+        $HTMLParsedOpenAlerts = [System.Web.HttpUtility]::HtmlDecode(((($HTMLOpenAlerts) -replace '<table>', $AlertsTableStyle) -replace '<td>', $AlertsTableTDStyle))
+
+        $ParsedResolvedAlerts = $DeviceResolvedAlerts | ForEach-Object { 
+            [PSCustomObject]@{
+                View        = "<a class=`"button-a button-a-primary`" target=`"_blank`" href=`"https://$($DattoPlatform)rmm.centrastage.net/alert/$($_.alertUid)`">View</a>"
+                Priority    = $_.priority
+                Created     = $([datetime]$origin = '1970-01-01 00:00:00'; $origin.AddMilliSeconds($_.timestamp))
+                Type        = $AlertTypesLookup[$_.alertContext.'@class']
+                Description = Get-AlertDescription -Alert $_
+            }
+        }
+
+        $HTMLResolvedAlerts = $ParsedResolvedAlerts | Sort-Object Created -desc | select-object -first 10 | convertto-html -Fragment
+        $HTMLParsedResolvedAlerts = [System.Web.HttpUtility]::HtmlDecode(((($HTMLResolvedAlerts) -replace '<table>', $AlertsTableStyle) -replace '<td>', $AlertsTableTDStyle))
 
 
 
-    $AlertDetailsHTML = @"
+        $AlertDetailsHTML = @"
 <!-- Alert Details : BEGIN -->
 <tr>
     <td style="background-color: #222222;">
@@ -402,14 +404,14 @@ if ($showAlertDetails -eq $true) {
 </tr>
 <!-- Alert Details : END -->
 "@
-} else {
-    $AlertDetailsHTML = ''
-}
+    } else {
+        $AlertDetailsHTML = ''
+    }
 
 
-# Build the Full HTML Page
+    # Build the Full HTML Page
 
-$HtmlBody = @"
+    $HtmlBody = @"
 
 <!DOCTYPE html>
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml">
@@ -793,7 +795,13 @@ $HtmlBody = @"
 
 "@
 
-New-Email -MailFrom $env:MailFrom -MailTo $env:MailTo -MailSubject $EmailSubject -MailHTML $HtmlBody
+    New-Email -MailFrom $env:MailFrom -MailTo $env:MailTo -MailSubject $EmailSubject -MailHTML $HtmlBody
+
+} else {
+    Write-Host "No alert found"
+}
+
+
 
 # Associate values to output bindings by calling 'Push-OutputBinding'.
 Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{

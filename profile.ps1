@@ -12,7 +12,7 @@
 # Authenticate with Azure PowerShell using MSI.
 # Remove this if you are not planning on using MSI or Azure PowerShell.
 
-import-module .\HuduHelper.psm1
+import-module .\DRMMHelper.psm1
 import-module DattoRMM
 
 # Uncomment the next line to enable legacy AzureRm alias in Azure PowerShell.

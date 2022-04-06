@@ -18,7 +18,7 @@ $AlertsTableTDStyle = '<td style = "border-width: 1px; padding: 3px; border-styl
 
 $AlertWebhook = $Request.Body
 
-$AlertDescription = $AlertWebhook.troubleshootingNote
+$AlertTroubleshooting = $AlertWebhook.troubleshootingNote
 $AlertDocumentationURL = $AlertWebhook.docURL
 $ShowDeviceDetails = $AlertWebhook.showDeviceDetails
 $ShowDeviceStatus = $AlertWebhook.showDeviceStatus
@@ -338,7 +338,7 @@ if ($Alert) {
 
         $ParsedOpenAlerts = $DeviceOpenAlerts | ForEach-Object {
             [PSCustomObject]@{
-                View        = "<a class=`"button-a button-a-primary`" target=`"_blank`" href=`"https://$($DattoPlatform)rmm.centrastage.net/alert/$($_.alertUid)`">View</a>"
+                View        = "<a class=`"button-a button-a-primary`" target=`"_blank`" href=`"https://$($DattoPlatform)rmm.centrastage.net/alert/$($_.alertUid)`" style=`"background: #333333; border: 1px solid #000000; font-family: sans-serif; font-size: 15px; line-height: 15px; text-decoration: none; padding: 13px 17px; color: #ffffff; display: block; border-radius: 4px;`">View</a>"
                 Priority    = $_.priority
                 Created     = $([datetime]$origin = '1970-01-01 00:00:00'; $origin.AddMilliSeconds($_.timestamp))
                 Type        = $AlertTypesLookup[$_.alertContext.'@class']
@@ -351,7 +351,7 @@ if ($Alert) {
 
         $ParsedResolvedAlerts = $DeviceResolvedAlerts | ForEach-Object { 
             [PSCustomObject]@{
-                View        = "<a class=`"button-a button-a-primary`" target=`"_blank`" href=`"https://$($DattoPlatform)rmm.centrastage.net/alert/$($_.alertUid)`">View</a>"
+                View        = "<a class=`"button-a button-a-primary`" target=`"_blank`" href=`"https://$($DattoPlatform)rmm.centrastage.net/alert/$($_.alertUid)`" style=`"background: #333333; border: 1px solid #000000; font-family: sans-serif; font-size: 15px; line-height: 15px; text-decoration: none; padding: 13px 17px; color: #ffffff; display: block; border-radius: 4px;`">View</a>"
                 Priority    = $_.priority
                 Created     = $([datetime]$origin = '1970-01-01 00:00:00'; $origin.AddMilliSeconds($_.timestamp))
                 Type        = $AlertTypesLookup[$_.alertContext.'@class']
@@ -383,8 +383,10 @@ if ($Alert) {
                     <h3>Open Alerts</h3>
 
                 $($HTMLParsedOpenAlerts)
+                <br />
 <h3>Recent Resolved Alerts</h3>
                 $($HTMLParsedResolvedAlerts)
+                <br />
                 </td>
             </tr>
             <tr>
@@ -688,10 +690,12 @@ if ($Alert) {
                                     <h1
                                         style="margin: 0 0 10px; font-size: 25px; line-height: 30px; font-weight: normal;$Colour">
                                         $($Alert.priority) Alert - $($Device.siteName) - $($Device.hostname)</h1>
-                                        <h3>$($AlertMessage):</h3>
-                                        <p style="margin: 0 0 10px;">$($AlertTypesLookup[$Alert.alertContext.'@class']) - $(Get-AlertDescription -Alert $Alert) $($Alert.diagnostics)</p>
+                                        <h3>$($AlertTypesLookup[$Alert.alertContext.'@class']) - $($AlertMessage):</h3>
+                                        <p style="margin: 0 0 10px;">$(Get-AlertDescription -Alert $Alert)
+                                        $($Alert.diagnostics)</p>
+                                        <br />
                                         <h3>Troubleshooting:</h3>
-                                        <p style="margin: 0 0 10px;">$($AlertDescription)</p>
+                                        <p style="margin: 0 0 10px;">$($AlertTroubleshooting)</p>
                                 </td>
                             </tr>
 

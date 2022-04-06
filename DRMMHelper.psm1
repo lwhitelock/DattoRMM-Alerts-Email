@@ -41,44 +41,43 @@ function New-Email {
     $Clientsecret = $env:AzureEmailClientSecret
     $tenantID = $env:TenantID
 
-$MailSender = $MailFrom
+    $MailSender = $MailFrom
 
-#Connect to GRAPH API
-$tokenBody = @{
-    Grant_Type    = "client_credentials"
-    Scope         = "https://graph.microsoft.com/.default"
-    Client_Id     = $clientId
-    Client_Secret = $clientSecret
-}
-$tokenResponse = Invoke-RestMethod -Uri "https://login.microsoftonline.com/$tenantID/oauth2/v2.0/token" -Method POST -Body $tokenBody
-$headers = @{
-    "Authorization" = "Bearer $($tokenResponse.access_token)"
-    "Content-type"  = "application/json"
-}
+    #Connect to GRAPH API
+    $tokenBody = @{
+        Grant_Type    = "client_credentials"
+        Scope         = "https://graph.microsoft.com/.default"
+        Client_Id     = $clientId
+        Client_Secret = $clientSecret
+    }
+    $tokenResponse = Invoke-RestMethod -Uri "https://login.microsoftonline.com/$tenantID/oauth2/v2.0/token" -Method POST -Body $tokenBody
+    $headers = @{
+        "Authorization" = "Bearer $($tokenResponse.access_token)"
+        "Content-type"  = "application/json"
+    }
 
-#Send Mail    
-$URLsend = "https://graph.microsoft.com/v1.0/users/$MailSender/sendMail"
-$BodyJsonsend = @"
-                    {
-                        "message": {
-                          "subject": "$MailSubject",
-                          "body": {
-                            "contentType": "HTML",
-                            "content": "$MailHTML"
-                          },
-                          "toRecipients": [
-                            {
-                              "emailAddress": {
-                                "address": "$MailTo"
-                              }
-                            }
-                          ]
-                        },
-                        "saveToSentItems": "true"
-                      }
-"@
+    #Send Mail    
+    $URLsend = "https://graph.microsoft.com/v1.0/users/$MailSender/sendMail"
+    $Message = @{
+        message         = @{
+            subject = $MailSubject
+            body    = @{
+                contentType = "HTML"
+                content     = $MailHTML
+            }
+        }
+        toRecipients    = @(
+            @{
+                emailAddress = @{
+                    address = $MailTo
+                }
+            }
+        )
+        saveToSentItems = "true"
+    }
 
-$null = Invoke-RestMethod -Method POST -Uri $URLsend -Headers $headers -Body $BodyJsonsend
+    $null = Invoke-RestMethod -Method POST -Uri $URLsend -Headers $headers -Body $Message -ContentType 'application/json'
+
 }
 
 function Get-HeatMap {

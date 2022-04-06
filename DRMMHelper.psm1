@@ -60,25 +60,23 @@ function New-Email {
     $URLsend = "https://graph.microsoft.com/v1.0/users/$MailSender/sendMail"
     $Message = @{
         message         = @{
-            subject = $MailSubject
-            body    = @{
+            subject      = $MailSubject
+            body         = @{
                 contentType = "HTML"
                 content     = $MailHTML
             }
+            toRecipients = @(
+                @{
+                    emailAddress = @{
+                        address = $MailTo
+                    }
+                })
         }
-        toRecipients    = @(
-            @{
-                emailAddress = @{
-                    address = $MailTo
-                }
-            }
-        )
         saveToSentItems = "true"
     }
 
-    $null = Invoke-RestMethod -Method POST -Uri $URLsend -Headers $headers -Body $Message -ContentType 'application/json'
-
-    Write-Host "Message: $($Message | convertto-json -Depth 100 | out-string)"
+    $null = Invoke-RestMethod -Method POST -Uri $URLsend -Headers $headers -Body $Message -ContentType "application/json"
+    Write-Host "Message: $($Message | convertto-json | out-string)"
 }
 
 function Get-HeatMap {

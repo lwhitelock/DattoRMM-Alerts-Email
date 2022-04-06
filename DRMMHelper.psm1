@@ -152,7 +152,7 @@ function Get-AlertDescription {
 
     switch ($AlertContext.'@class') {
         'perf_resource_usage_ctx' { $Result = "$($AlertContext.type) - $($AlertContext.percentage)" }
-        'comp_script_ctx' { $Result = "$($AlertContext.Samples -join ', ')" }
+        'comp_script_ctx' { $Result = "$($AlertContext.Samples | convertto-html -as List -Fragment)" }
         'perf_mon_ctx' { $Result = "$($AlertContext.value)" }
         'online_offline_status_ctx' { $Result = "$($AlertContext.status)" }
         'eventlog_ctx' { $Result = "$($AlertContext.logName) - $($AlertContext.type) - $($AlertContext.code) - $($AlertContext.description)" }

@@ -24,6 +24,7 @@ $ShowDeviceDetails = $AlertWebhook.showDeviceDetails
 $ShowDeviceStatus = $AlertWebhook.showDeviceStatus
 $ShowAlertDetails = $AlertWebhook.showAlertDetails
 $AlertID = $AlertWebhook.alertUID
+$AlertMessage = $AlertWebhook.alertMessage
 $DattoPlatform = $AlertWebhook.platform
 
 
@@ -60,7 +61,7 @@ if ($Alert) {
 
 
     # Generate Email Subject
-    $EmailSubject = "Alert: $($AlertTypesLookup[$Alert.alertContext.'@class']) - $(Get-AlertDescription -Alert $Alert) on device: $($Device.hostname) - Alert{$($Alert.alertUid)}"
+    $EmailSubject = "Alert: $($AlertTypesLookup[$Alert.alertContext.'@class']) - $($AlertMessage) on device: $($Device.hostname) - Alert{$($Alert.alertUid)}"
 
     # Set the Header Colour for the alert based on pirority
     Switch ($Alert.priority) {
@@ -643,7 +644,7 @@ if ($Alert) {
 
         <!-- Visually Hidden Preheader Text : BEGIN -->
         <div style="max-height:0; overflow:hidden; mso-hide:all;" aria-hidden="true">
-            New $($Alert.priority) Alert - $($Device.siteName) - $($Device.hostname) - $(Get-AlertDescription -Alert $Alert)
+            New $($Alert.priority) Alert - $($Device.siteName) - $($Device.hostname) - $($AlertMessage)
         </div>
         <!-- Visually Hidden Preheader Text : END -->
 
@@ -687,8 +688,8 @@ if ($Alert) {
                                     <h1
                                         style="margin: 0 0 10px; font-size: 25px; line-height: 30px; font-weight: normal;$Colour">
                                         $($Alert.priority) Alert - $($Device.siteName) - $($Device.hostname)</h1>
-                                        <h3>Details:</h3>
-                                        <p style="margin: 0 0 10px;">$($AlertTypesLookup[$Alert.alertContext.'@class']) - $(Get-AlertDescription -Alert $Alert)</p>
+                                        <h3>$($AlertMessage):</h3>
+                                        <p style="margin: 0 0 10px;">$($AlertTypesLookup[$Alert.alertContext.'@class']) - $(Get-AlertDescription -Alert $Alert) $($Alert.diagnostics)</p>
                                         <h3>Troubleshooting:</h3>
                                         <p style="margin: 0 0 10px;">$($AlertDescription)</p>
                                 </td>

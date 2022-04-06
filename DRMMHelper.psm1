@@ -78,6 +78,7 @@ function New-Email {
 
     $null = Invoke-RestMethod -Method POST -Uri $URLsend -Headers $headers -Body $Message -ContentType 'application/json'
 
+    Write-Host "Message: $($Message | convertto-json -Depth 100 | out-string)"
 }
 
 function Get-HeatMap {

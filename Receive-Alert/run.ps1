@@ -3,8 +3,7 @@ using namespace System.Net
 # Input bindings are passed in via param block.
 param($Request, $TriggerMetadata)
 
-Write-Host "Processing Webhook for Alert $($Request.Body.Content.alertUID)"
-Write-Host "Recieved: $($Request | convertto-json -depth 100 | out-string)"
+Write-Host "Processing Webhook for Alert $($Request.Body.alertUID)"
 
 $DattoURL = $env:DattoURL
 $DattoKey = $env:DattoKey
@@ -17,7 +16,7 @@ $AlertsTableStyle = '<table style="border-width: 1px; border-style: solid; borde
 $AlertsTableTDStyle = '<td style = "border-width: 1px; padding: 3px; border-style: solid; border-color: white; overflow-wrap: break-word" width=auto>'
 
 
-$AlertWebhook = $Request.Body.Content
+$AlertWebhook = $Request.Body
 
 $AlertDescription = $AlertWebhook.troubleshootingNote
 $AlertDocumentationURL = $AlertWebhook.docURL

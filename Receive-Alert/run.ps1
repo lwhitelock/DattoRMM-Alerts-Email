@@ -4,6 +4,7 @@ using namespace System.Net
 param($Request, $TriggerMetadata)
 
 Write-Host "Processing Webhook for Alert $($Request.Body.Content.alertUID)"
+Write-Host "Recieved: $($Request | convertto-json -depth 100 | out-string)"
 
 $DattoURL = $env:DattoURL
 $DattoKey = $env:DattoKey

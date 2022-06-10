@@ -4,7 +4,7 @@ Takes Datto RMM Alert Webhooks and sends them to an email address
 ### Webhook
 ```
 {
-    "alertTroubleshooting": "Please run scandisk and then consult the documentation with the view docs link",
+    "troubleshootingNote": "Please run scandisk and then consult the documentation with the view docs link",
     "docURL": "https://docs.yourdomain.com/alert-specific-kb-article",
     "showDeviceDetails": true,
     "showDeviceStatus": true,

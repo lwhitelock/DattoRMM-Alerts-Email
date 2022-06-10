@@ -1,0 +1,358 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "baseName": {
+            "defaultValue": "DattoRMMEmailAlerts",
+            "type": "string",
+            "metadata": {
+                "description": "Name use as base-template to named the resources deployed in Azure."
+            }
+        },
+        "DattoURL": {
+            "defaultValue": "https://merlot-api.centrastage.net",
+            "type": "string",
+            "metadata": {
+                "description": "Your Datto API URL"
+            }
+        },
+        "DattoKey": {
+            "defaultValue": "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+            "type": "string",
+            "metadata": {
+                "description": "Your Datto API Key"
+            }
+        },        
+        "DattoSecretKey": {
+            "defaultValue": "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+            "type": "string",
+            "metadata": {
+                "description": "Your Datto API Secret Key"
+            }
+        },
+        "CPUUDF": {
+            "defaultValue": "29",
+            "type": "string",
+            "metadata": {
+                "description": "The UDF you have set for CPU Usage details"
+            }
+        },
+        "RAMUDF": {
+            "defaultValue": "30",
+            "type": "string",
+            "metadata": {
+                "description": "The UDF you have set for RAM Usage details"
+            }
+        },
+        "NumberOfColumns": {
+            "defaultValue": "2",
+            "type": "string",
+            "metadata": {
+                "description": "The number of columns you would like the email body to use for the different sections"
+            }
+        },
+        "AzureEmailClientID": {
+            "defaultValue": "0000000-0000-0000-000-000000000",
+            "type": "string",
+            "metadata": {
+                "description": "The application ID with mail.send rights"
+            }
+        },
+        "AzureEmailClientSecret": {
+            "defaultValue": "0000000-0000-0000-000-000000000",
+            "type": "string",
+            "metadata": {
+                "description": "The application secret with mail.send rights"
+            }
+        },
+        "TenantID": {
+            "defaultValue": "0000000-0000-0000-000-000000000",
+            "type": "string",
+            "metadata": {
+                "description": "Your Azure Tenant ID."
+            }
+        },
+        "MailFrom": {
+            "defaultValue": "alerts@yourdomain.com",
+            "type": "string",
+            "metadata": {
+                "description": "The from email address for alerts"
+            }
+        },
+        "MailTo": {
+            "defaultValue": "support-rmm@yourdomain.com",
+            "type": "string",
+            "metadata": {
+                "description": "The email address to send alerts to"
+            }
+        },
+        "GitHubRepositoryURL": {
+            "defaultValue": "https://github.com/lwhitelock/DattoRMM-Alerts-Email.git",
+            "type": "string",
+            "metadata": {
+                "description": "If you have forked the repository enter the link to your fork here"
+            }
+        }    
+    },
+    "variables": {
+        "suffix": "[substring(toLower(uniqueString(resourceGroup().id, resourceGroup().location)),0,5)]",
+        "funcAppName": "[toLower(concat(parameters('baseName'), variables('suffix')))]",
+        "funcStorageName": "[tolower(concat(substring(parameters('baseName'), 0, min(length(parameters('baseName')),16)), 'stg', variables('suffix')))]",
+        "serverFarmName": "[concat(substring(parameters('baseName'), 0, min(length(parameters('baseName')),14)), '-srv-', variables('suffix'))]",
+        "uniqueResourceNameBase": "[toLower(concat(parameters('baseName'), variables('suffix')))]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.KeyVault/vaults",
+            "name": "[variables('uniqueResourceNameBase')]",
+            "apiVersion": "2016-10-01",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "sku": {
+                    "family": "A",
+                    "name": "standard"
+                },
+                "tenantId": "[subscription().tenantid]",
+                "accessPolicies": [
+                    {
+                        "tenantId": "[subscription().tenantid]",
+                        "objectId": "[reference(resourceId('Microsoft.Web/sites', variables('funcAppName')),'2019-08-01', 'full').identity.principalId]",
+                        "permissions": {
+                            "keys": [],
+                            "secrets": [
+                                "get"
+                            ],
+                            "certificates": []
+                        }
+                    }
+                ],
+                "enabledForDeployment": true,
+                "enabledForDiskEncryption": false,
+                "enabledForTemplateDeployment": true
+            },
+            "resources": [
+                {
+                    "type": "secrets",
+                    "name": "DattoURL",
+                    "apiVersion": "2015-06-01",
+                    "properties": {
+                        "contentType": "text/plain",
+                        "value": "[parameters('DattoURL')]"
+                    },
+                    "dependsOn": [
+                        "[resourceId('Microsoft.KeyVault/vaults', variables('uniqueResourceNameBase'))]"
+                    ]
+                },
+                {
+                    "type": "secrets",
+                    "name": "DattoKey",
+                    "apiVersion": "2015-06-01",
+                    "properties": {
+                        "contentType": "text/plain",
+                        "value": "[parameters('DattoKey')]"
+                    },
+                    "dependsOn": [
+                        "[resourceId('Microsoft.KeyVault/vaults', variables('uniqueResourceNameBase'))]"
+                    ]
+                },
+                {
+                    "type": "secrets",
+                    "name": "DattoSecretKey",
+                    "apiVersion": "2015-06-01",
+                    "properties": {
+                        "contentType": "text/plain",
+                        "value": "[parameters('DattoSecretKey')]"
+                    },
+                    "dependsOn": [
+                        "[resourceId('Microsoft.KeyVault/vaults', variables('uniqueResourceNameBase'))]"
+                    ]
+                },
+                {
+                    "type": "secrets",
+                    "name": "AzureEmailClientID",
+                    "apiVersion": "2015-06-01",
+                    "properties": {
+                        "contentType": "text/plain",
+                        "value": "[parameters('AzureEmailClientID')]"
+                    },
+                    "dependsOn": [
+                        "[resourceId('Microsoft.KeyVault/vaults', variables('uniqueResourceNameBase'))]"
+                    ]
+                },
+                {
+                    "type": "secrets",
+                    "name": "AzureEmailClientSecret",
+                    "apiVersion": "2015-06-01",
+                    "properties": {
+                        "contentType": "text/plain",
+                        "value": "[parameters('AzureEmailClientSecret')]"
+                    },
+                    "dependsOn": [
+                        "[resourceId('Microsoft.KeyVault/vaults', variables('uniqueResourceNameBase'))]"
+                    ]
+                },
+                {
+                    "type": "secrets",
+                    "name": "TenantID",
+                    "apiVersion": "2015-06-01",
+                    "properties": {
+                        "contentType": "text/plain",
+                        "value": "[parameters('TenantID')]"
+                    },
+                    "dependsOn": [
+                        "[resourceId('Microsoft.KeyVault/vaults', variables('uniqueResourceNameBase'))]"
+                    ]
+                }
+            ],
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', variables('funcAppName'))]"
+            ]
+        },
+        {
+            "apiVersion": "2015-08-01",
+            "type": "Microsoft.Web/sites",
+            "identity": {
+                "type": "SystemAssigned"
+            },
+            "name": "[variables('funcAppName')]",
+            "location": "[resourceGroup().location]",
+            "kind": "functionapp",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/serverfarms',variables('serverFarmName'))]",
+                "[resourceId('Microsoft.Storage/storageAccounts', variables('funcStorageName'))]"
+            ],
+            "properties": {
+                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('serverFarmName'))]",
+                "siteConfig": {
+                    "Use32BitWorkerProcess": false,
+                    "powerShellVersion": "~7",
+                    "appSettings": [
+                        {
+                            "name": "AzureWebJobsDashboard",
+                            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('funcStorageName'), ';AccountKey=', listKeys(variables('funcStorageName'),'2015-05-01-preview').key1)]"
+                        },
+                        {
+                            "name": "AzureWebJobsStorage",
+                            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('funcStorageName'), ';AccountKey=', listKeys(variables('funcStorageName'),'2015-05-01-preview').key1)]"
+                        },
+                        {
+                            "name": "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING",
+                            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('funcStorageName'), ';AccountKey=', listKeys(variables('funcStorageName'),'2015-05-01-preview').key1)]"
+                        },
+                        {
+                            "name": "WEBSITE_CONTENTSHARE",
+                            "value": "[variables('funcAppName')]"
+                        },
+                        {
+                            "name": "FUNCTIONS_EXTENSION_VERSION",
+                            "value": "~3"
+                        },
+                        {
+                            "name": "DattoURL",
+                            "value": "[concat('@Microsoft.KeyVault(SecretUri=https://',variables('uniqueResourceNameBase'), '.vault.azure.net/secrets/DattoURL)')]"
+                        },
+                        {
+                            "name": "DattoKey",
+                            "value": "[concat('@Microsoft.KeyVault(SecretUri=https://',variables('uniqueResourceNameBase'), '.vault.azure.net/secrets/DattoKey)')]"
+                        },
+                        {
+                            "name": "DattoSecretKey",
+                            "value": "[concat('@Microsoft.KeyVault(SecretUri=https://',variables('uniqueResourceNameBase'), '.vault.azure.net/secrets/DattoSecretKey)')]"
+                        },
+                        {
+                            "name": "AzureEmailClientID",
+                            "value": "[concat('@Microsoft.KeyVault(SecretUri=https://',variables('uniqueResourceNameBase'), '.vault.azure.net/secrets/AzureEmailClientID)')]"
+                        },
+                        {
+                            "name": "AzureEmailClientSecret",
+                            "value": "[concat('@Microsoft.KeyVault(SecretUri=https://',variables('uniqueResourceNameBase'), '.vault.azure.net/secrets/AzureEmailClientSecret)')]"
+                        },
+                        {
+                            "name": "TenantID",
+                            "value": "[concat('@Microsoft.KeyVault(SecretUri=https://',variables('uniqueResourceNameBase'), '.vault.azure.net/secrets/TenantID)')]"
+                        },
+                        {
+                            "name": "FUNCTIONS_WORKER_RUNTIME",
+                            "value": "powershell"
+                        },
+                        {
+                            "name": "CPUUDF",
+                            "value": "[parameters('CPUUDF')]"
+                        },
+                        {
+                            "name": "RAMUDF",
+                            "value": "[parameters('RAMUDF')]"
+                        },
+                        {
+                            "name": "NumberOfColumns",
+                            "value": "[parameters('NumberOfColumns')]"
+                        },
+                        {
+                            "name": "MailFrom",
+                            "value": "[parameters('MailFrom')]"
+                        },
+                        {
+                            "name": "MailTo",
+                            "value": "[parameters('MailTo')]"
+                        }
+                    ]
+                }
+            },
+            "resources": [
+                {
+                    "apiVersion": "2015-08-01",
+                    "name": "web",
+                    "type": "sourcecontrols",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.Web/sites/', variables('funcAppName'))]"
+                    ],
+                    "properties": {
+                        "RepoUrl": "[parameters('GitHubRepositoryURL')]",
+                        "branch": "master",
+                        "publishRunbook": true,
+                        "IsManualIntegration": true
+                    }
+                }
+            ]
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts",
+            "apiVersion": "2018-07-01",
+            "name": "[variables('funcStorageName')]",
+            "location": "[resourceGroup().location]",
+            "tags": {
+                "displayName": "funStorageName"
+            },
+            "sku": {
+                "name": "Standard_LRS"
+            },
+            "kind": "StorageV2"
+        },
+        {
+            "type": "Microsoft.Web/serverfarms",
+            "apiVersion": "2018-02-01",
+            "name": "[variables('serverFarmName')]",
+            "location": "[resourceGroup().location]",
+            "sku": {
+                "name": "Y1",
+                "tier": "Dynamic",
+                "size": "Y1",
+                "family": "Y",
+                "capacity": 0
+            },
+            "properties": {
+                "perSiteScaling": false,
+                "maximumElasticWorkerCount": 1,
+                "isSpot": false,
+                "reserved": false,
+                "isXenon": false,
+                "hyperV": false,
+                "targetWorkerCount": 0,
+                "targetWorkerSizeId": 0,
+                "name": "[variables('serverFarmName')]",
+                "computeMode": "Dynamic"
+            }
+        }        
+    ],
+    "outputs": {}
+}

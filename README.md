@@ -5,6 +5,7 @@ Takes Datto RMM Alert Webhooks and sends them to an email address using the Micr
 ### CPU and RAM information
 If you wish for the script to be able to display CPU and RAM usage for the device you will need to roll out a component to datto, configure it as a monitor on your devices and set it to run as often as you would like the data to update.
 This will then document RAM and CPU usage to the two custom fields you specify. (Default of 29 and 30)
+This can be downloaded from here https://github.com/lwhitelock/DattoRMM-Alerts-Email/raw/main/Component/Document%20Current%20CPU%20and%20Memory%20use%20to%20UDF.cpt
 
 ### Variables
 #### DattoURL

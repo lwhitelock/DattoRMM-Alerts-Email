@@ -342,7 +342,7 @@
             },
             "properties": {
                 "perSiteScaling": false,
-                "maximumElasticWorkerCount": 1,
+                "maximumElasticWorkerCount": 5,
                 "isSpot": false,
                 "reserved": false,
                 "isXenon": false,

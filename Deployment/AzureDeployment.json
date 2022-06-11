@@ -3,7 +3,7 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
         "baseName": {
-            "defaultValue": "DattoRMMEmailAlerts",
+            "defaultValue": "DattoEmailAlerts",
             "type": "string",
             "metadata": {
                 "description": "Name use as base-template to named the resources deployed in Azure."

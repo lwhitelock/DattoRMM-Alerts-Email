@@ -41,7 +41,8 @@ Set the from email address for alert emails. This must be a mailbox that exists 
 This is the email address where you would like alerts sent to.
 
 ### Installation
-To Deploy you can click this link and then configure the settings as detailed above.
+To Deploy you can click the below button and then configure the settings as detailed above.
+
 [![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3a%2f%2fraw.githubusercontent.com%2flwhitelock%2fDattoRMM-Alerts-Email%2fmain%2fDeployment%2fAzureDeployment.json)
 
 #### Make a cup of tea.

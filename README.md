@@ -2,6 +2,9 @@
 Takes Datto RMM Alert Webhooks and sends them to an email address using the Microsoft 365 Graph API.
 
 ## Setup
+### Make a fork
+I highly recommend you make a fork of this repository. When you click the deploy button it will ask you for the repository to deploy from, so you can easily paste in your own. You can still deploy from my respository, but I have built this function to be more of a starting point for you to extend it yourself to get the data you want to make resolving alerts quicker for your team.
+
 ### CPU and RAM information
 If you wish for the script to be able to display CPU and RAM usage for the device you will need to roll out a component to datto, configure it as a monitor on your devices and set it to run as often as you would like the data to update.
 This will then document RAM and CPU usage to the two custom fields you specify. (Default of 29 and 30)

@@ -308,7 +308,7 @@
                     ],
                     "properties": {
                         "RepoUrl": "[parameters('GitHubRepositoryURL')]",
-                        "branch": "master",
+                        "branch": "main",
                         "publishRunbook": true,
                         "IsManualIntegration": true
                     }
